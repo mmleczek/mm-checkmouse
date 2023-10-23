@@ -7,8 +7,13 @@ ipcRenderer.on("timer", (event, data) => {
 
 ipcRenderer.on("windows", (event, data) => {
     for (let i=0; i<data.message.length; i++) {
-        addElemToDropDown("dropdown", i, data.message[i].title);
+        addElemToDropDown("dropdown", i, `(${data.message[i].id}) ${data.message[i].title}`);
     }
+});
+
+ipcRenderer.on("activeWindow", (event, data) => {
+    const info = document.getElementById("info");
+    info.innerText = `(${data.message.id}) ${data.message.title}`;
 });
 
 document.addEventListener("DOMContentLoaded", function() {

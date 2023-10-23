@@ -54,23 +54,41 @@ async function createWindow() {
             canChangeMovedMouse = false;
             movedMouse = false;
             const curActiveWin = await activeWindow({
-                screenRecordingPermission: false
+                screenRecordingPermission: true
             });
-            if (selectedWindowId == curActiveWin?.id) currentTimer = currentTimer + 1;
+            if (selectedWindowId == curActiveWin?.id) currentTimer = currentTimer + 3;
             setTimeout(() => canChangeMovedMouse = true, 100);
             win.webContents.send("timer", {
                 message: secondsToHMS(currentTimer)
             });
         }
-    }, 1000);
+    }, 3000);
 
-    openWindows = await getOpenWindows();
+    let i = setInterval(async () => {
+        const curActiveWin = await activeWindow({
+            screenRecordingPermission: true
+        });
+
+        win.webContents.send("activeWindow", {
+            message: curActiveWin
+        });
+
+        if (!curActiveWin?.title.includes("mm-checkmouse")) {
+            selectedWindowId = curActiveWin.id;
+            clearInterval(i);
+        }
+    }, 2000);
+
+    try {
+        openWindows = await getOpenWindows();
+    } catch(e) {
+        console.log(e);
+    }
     win.webContents.send("windows", {
         message: openWindows
     });
 
     ipcMain.on("triggerRestart", (event, data) => {
-        console.log("triggerRestart");
         currentTimer = 0;
         win.webContents.send("timer", {
             message: secondsToHMS(currentTimer)
